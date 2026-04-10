@@ -17,34 +17,35 @@
 
     <div id="app" class="app-layout">
         
-        <!-- Sidebar Navigation (Petpooja Dark Sidebar) -->
+        <!-- Sidebar Navigation (Modern Gradient) -->
         <aside id="desktop-sidebar" class="sidebar">
             <div class="sidebar-top">
-                 <!-- Brand Logo Area -->
                  <div class="brand">
-                    <img src="https://morarkaorganic.com/img/logo.png" alt="Morarka" style="height: 40px; filter: brightness(0) invert(1);">
+                    <img src="https://morarkaorganic.com/img/logo.png" alt="Morarka" style="height: 32px;">
                  </div>
             </div>
             <nav class="nav-links">
-                <a href="#" class="active"><i class="ph ph-squares-four"></i> Dashboard</a>
-                <a href="#"><i class="ph ph-storefront"></i> All Stores</a>
-                <a href="#"><i class="ph ph-users-three"></i> Field Force</a>
-                <a href="#"><i class="ph ph-chart-bar"></i> Analytics</a>
-                <a href="#"><i class="ph ph-receipt"></i> Billing</a>
-                <a href="#"><i class="ph ph-gear"></i> Settings</a>
+                <a href="#" class="active"><i class="ph ph-squares-four"></i> <span>Dashboard</span></a>
+                <a href="#"><i class="ph ph-storefront"></i> <span>All Stores</span></a>
+                <a href="#"><i class="ph ph-users-three"></i> <span>Field Force</span></a>
+                <a href="#"><i class="ph ph-chart-bar"></i> <span>Analytics</span></a>
+                <a href="#"><i class="ph ph-receipt"></i> <span>Billing</span></a>
+                <a href="#"><i class="ph ph-gear"></i> <span>Settings</span></a>
             </nav>
             <div class="sidebar-footer">
-                <button class="btn-switch-view"><i class="ph ph-device-mobile"></i> Mobile View</button>
+                <button class="btn-switch-view" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); width: 100%; border-radius: 12px; color: white; padding: 12px; cursor: pointer;">
+                    <i class="ph ph-device-mobile"></i> Mobile View
+                </button>
             </div>
         </aside>
 
         <main class="content-area">
-            <!-- Top Header (Petpooja Red Header) -->
+            <!-- Top Header (Clean Integrated) -->
             <header class="top-header">
                 <div class="left-actions">
                     <i class="ph ph-list menu-toggle"></i>
                     <div class="store-selector">
-                        <span class="selected-store">All Business Units <i class="ph ph-caret-down"></i></span>
+                        Dashboard
                     </div>
                 </div>
                 <div class="center-actions desktop-only">
@@ -53,6 +54,9 @@
                     <div class="header-link"><i class="ph ph-users"></i> Management</div>
                 </div>
                 <div class="right-actions">
+                    <button id="btn-sync-now" class="btn-sync">
+                        <i class="ph ph-arrows-counter-clockwise"></i> Sync Now
+                    </button>
                     <div class="notification-hub">
                         <i class="ph ph-bell"></i>
                         <span class="badge">3</span>
@@ -65,87 +69,101 @@
 
             <div class="scroll-content">
                 <!-- ============================================== -->
-                <!-- EXECUTIVE DASHBOARD (PETPOOJA STYLE)            -->
+                <!-- EXECUTIVE DASHBOARD (MODERN STYLE)              -->
                 <!-- ============================================== -->
                 <section id="executive-view" class="view-section">
                     
-                    <!-- KPI Metrics Card (Circular Rings) -->
+                    <!-- KPI Metrics Grid -->
                     <div class="kpi-grid">
                         <div class="kpi-item">
-                            <div class="ring-status green">
+                            <div class="kpi-icon blue">
                                 <i class="ph ph-shopping-cart"></i>
                             </div>
-                            <h2 id="metric-orders">125</h2>
-                            <p>Orders</p>
-                        </div>
-                        <div class="kpi-item">
-                            <div class="ring-status pink">
-                                <i class="ph ph-percent"></i>
+                            <div class="kpi-info">
+                                <h2 id="metric-orders">0</h2>
+                                <p>Total Orders</p>
                             </div>
-                            <h2 id="metric-discount">2050</h2>
-                            <p>Discount</p>
                         </div>
                         <div class="kpi-item">
-                            <div class="ring-status yellow">
-                                <i class="ph ph-receipt"></i>
-                            </div>
-                            <h2 id="metric-tax">1220</h2>
-                            <p>Tax</p>
-                        </div>
-                        <div class="kpi-item">
-                            <div class="ring-status grey">
-                                <i class="ph ph-pencil-line"></i>
-                            </div>
-                            <h2 id="metric-modified">125</h2>
-                            <p>Bills modified</p>
-                        </div>
-                        <div class="kpi-item">
-                            <div class="ring-status purple">
-                                <i class="ph ph-printer"></i>
-                            </div>
-                            <h2 id="metric-reprint">100</h2>
-                            <p>Bills re-printed</p>
-                        </div>
-                        <div class="kpi-item">
-                            <div class="ring-status teal">
+                            <div class="kpi-icon green">
                                 <i class="ph ph-currency-inr"></i>
                             </div>
-                            <h2 id="metric-expenses">80</h2>
-                            <p>Total expenses</p>
+                            <div class="kpi-info">
+                                <h2 id="metric-revenue">0</h2>
+                                <p>Revenue</p>
+                            </div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-icon orange">
+                                <i class="ph ph-package"></i>
+                            </div>
+                            <div class="kpi-info">
+                                <h2 id="metric-units">0</h2>
+                                <p>Total Units</p>
+                            </div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-icon purple">
+                                <i class="ph ph-user-check"></i>
+                            </div>
+                            <div class="kpi-info">
+                                <h2 id="metric-visits">0</h2>
+                                <p>Field Visits</p>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Main Chart Area -->
-                    <div class="analytics-card">
-                        <div class="card-header">
-                            <div class="header-title">
-                                <span class="header-icon"><i class="ph ph-chart-line-up"></i></span>
-                                <h3>Feedback : Satisfaction Score - 4.2</h3>
+                    <!-- Main Dashboard Grid -->
+                    <div class="dashboard-main-grid">
+                        <!-- Revenue Trend Chart -->
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <h3>Sales Revenue Trend</h3>
+                                    <p>Daily performance over last 7 days</p>
+                                </div>
                             </div>
-                            <div class="header-filters">
-                                <span>Last 10 days comparison</span>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="trendChart"></canvas>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <div class="chart-container">
-                                <canvas id="trendChart"></canvas>
+
+                        <!-- Person-wise Performance (New) -->
+                        <div class="side-panel">
+                            <div class="person-card">
+                                <div class="card-header">
+                                     <div class="card-title">
+                                        <h3>Salesman Performance</h3>
+                                        <p>Person-wise revenue breakdown</p>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-container" style="height: 350px;">
+                                        <canvas id="personChart"></canvas>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Live Feed (Detailed Proxy Services) -->
-                     <div class="side-grids mt-4">
+                    <!-- Modern Sales Feed Table -->
+                     <div class="data-table-section">
                         <div class="data-table-panel">
-                            <h3>Live Proxy Operations</h3>
+                            <div class="table-header">
+                                <h3>Detailed Sales Feed</h3>
+                                <button class="btn-sync" style="padding: 5px 15px; font-size: 0.8rem;">View All</button>
+                            </div>
                             <div class="table-overflow">
                                 <table class="proxy-table">
                                     <thead>
                                         <tr>
-                                            <th>Agent</th>
-                                            <th>Location</th>
-                                            <th>Service Type</th>
-                                            <th>Status</th>
-                                            <th>Ping</th>
+                                            <th>Salesman</th>
+                                            <th>Shop Name</th>
+                                            <th>Product</th>
+                                            <th>Amount</th>
+                                            <th>Date</th>
                                         </tr>
                                     </thead>
                                     <tbody id="proxy-feed-body">

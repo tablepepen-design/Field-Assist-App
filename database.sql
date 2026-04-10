@@ -27,3 +27,18 @@ CREATE TABLE IF NOT EXISTS tasks (
 INSERT IGNORE INTO users (phone_number, role) VALUES 
 ('0000000000', 'admin'),
 ('1234567890', 'field_agent');
+
+CREATE TABLE IF NOT EXISTS sales_data (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sale_date DATE,
+    salesman VARCHAR(255),
+    item_number VARCHAR(100),
+    shop_name VARCHAR(255),
+    product VARCHAR(255),
+    units INT,
+    unit_price DECIMAL(10, 2),
+    sales_amount DECIMAL(10, 2),
+    totals DECIMAL(10, 2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY (sale_date, salesman, item_number, shop_name, product, units)
+);

@@ -6,23 +6,25 @@ const DOM = {
     
     // Executive Metrics
     proxyFeedBody: document.getElementById('proxy-feed-body'),
+    metricOrders: document.getElementById('metric-orders'),
+    metricRevenue: document.getElementById('metric-revenue'),
+    metricUnits: document.getElementById('metric-units'),
+    metricVisits: document.getElementById('metric-visits'),
+    
+    // Sync Button
+    btnSyncNow: document.getElementById('btn-sync-now'),
     
     // Charts
     trendChart: document.getElementById('trendChart'),
+    personChart: document.getElementById('personChart'),
 };
 
 let currentView = 'executive'; 
 let trendChartInstance = null;
+let personChartInstance = null;
 let analyticsInterval = null;
 
-// Mock Agent/Proxy Data for detailed commercial look
-const MOCK_PROXIES = [
-    { agent: 'Rajesh Kumar', loc: 'Downtown Jaipur', type: 'Soil Testing', status: 'In Transit', ping: '2m ago' },
-    { agent: 'Anita Sharma', loc: 'Mandawa Farm', type: 'Certification', status: 'On Site', ping: 'Just now' },
-    { agent: 'Vikram Singh', loc: 'Sikar Hub', type: 'Logistics', status: 'Loading', ping: '15m ago' },
-    { agent: 'Suresh Raina', loc: 'Kota Storage', type: 'Farm Audit', status: 'Completed', ping: '1h ago' },
-    { agent: 'Meena Devi', loc: 'Udaipur Sector 5', type: 'Training', status: 'On Site', ping: '5m ago' }
-];
+const COLORS = ['#6366F1', '#8B5CF6', '#F43F5E', '#10B981', '#F59E0B', '#3B82F6', '#EC4899', '#8B5CF6'];
 
 function init() {
     setupEventListeners();
@@ -33,6 +35,36 @@ function setupEventListeners() {
     DOM.switchViewBtns.forEach(btn => {
         btn.addEventListener('click', toggleView);
     });
+
+    if (DOM.btnSyncNow) {
+        DOM.btnSyncNow.addEventListener('click', runManualSync);
+    }
+}
+
+async function runManualSync() {
+    const btn = DOM.btnSyncNow;
+    const originalHtml = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Syncing...';
+    
+    try {
+        const res = await fetch('api/pull_sync.php');
+        const data = await res.json();
+        
+        if (data.status === 'success') {
+            alert(data.message);
+            fetchAnalyticsData(); // Refresh UI
+        } else {
+            alert('Sync Failed: ' + (data.error || 'Unknown error'));
+        }
+    } catch (e) {
+        alert('Sync Request Failed');
+        console.error(e);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+    }
 }
 
 function toggleView() {
@@ -45,7 +77,6 @@ function updateView() {
         DOM.executiveView.classList.remove('hidden');
         DOM.agentView.classList.add('hidden');
         initExecutiveAnalytics();
-        renderProxyFeed();
     } else {
         DOM.executiveView.classList.add('hidden');
         DOM.agentView.classList.remove('hidden');
@@ -53,13 +84,10 @@ function updateView() {
     }
 }
 
-/** ----------------------------------------------------
- * EXECUTIVE ANALYTICS: PETPOOJA STYLE
- * ---------------------------------------------------*/
 function initExecutiveAnalytics() {
     fetchAnalyticsData();
     if (!analyticsInterval) {
-        analyticsInterval = setInterval(fetchAnalyticsData, 30000); 
+        analyticsInterval = setInterval(fetchAnalyticsData, 60000); 
     }
 }
 
@@ -67,119 +95,143 @@ async function fetchAnalyticsData() {
     try {
         const res = await fetch('api/analytics.php');
         const data = await res.json();
-        renderTrendChart(data.trend);
-    } catch(e) { console.error("Analytics fetch failed"); }
+        
+        updateKPIMetrics(data);
+        renderSalesFeed(data.salesFeed);
+        renderTrendChart(data.salesTrend);
+        renderPersonChart(data.salesmanPerformance);
+        
+    } catch(e) { 
+        console.error("Analytics fetch failed", e); 
+    }
 }
 
-function renderProxyFeed() {
-    if (!DOM.proxyFeedBody) return;
+function updateKPIMetrics(data) {
+    if (DOM.metricOrders) DOM.metricOrders.textContent = data.salesStats.orders.toLocaleString();
+    if (DOM.metricRevenue) DOM.metricRevenue.textContent = "₹" + Math.round(data.salesStats.revenue).toLocaleString();
+    if (DOM.metricUnits) DOM.metricUnits.textContent = data.salesStats.units.toLocaleString();
+    if (DOM.metricVisits) DOM.metricVisits.textContent = data.liveOutput.toLocaleString();
+}
+
+function renderSalesFeed(feed) {
+    if (!DOM.proxyFeedBody || !feed) return;
     let html = '';
-    MOCK_PROXIES.forEach(p => {
-        const statusClass = p.status === 'On Site' ? 'text-success' : (p.status === 'In Transit' ? 'text-info' : '');
+    feed.forEach(s => {
         html += `
             <tr>
-                <td style="font-weight: 600;">${p.agent}</td>
-                <td>${p.loc}</td>
-                <td><span class="badge-type">${p.type}</span></td>
-                <td><span class="${statusClass}">${p.status}</span></td>
-                <td class="text-muted" style="font-size: 0.8rem;">${p.ping}</td>
+                <td style="font-weight: 700; color: var(--primary-dark);">${s.salesman}</td>
+                <td>${s.shop_name}</td>
+                <td><span class="badge-type">${s.product}</span></td>
+                <td style="font-weight: 700; color: var(--success);">₹${parseFloat(s.amount).toLocaleString()}</td>
+                <td class="text-secondary" style="font-size: 0.8rem;">${s.date}</td>
             </tr>
         `;
     });
     DOM.proxyFeedBody.innerHTML = html;
 }
 
-function renderTrendChart(trendData) {
+function renderTrendChart(salesTrend) {
     const ctx = DOM.trendChart;
-    if(!ctx) return;
+    if(!ctx || !salesTrend) return;
     
-    const labels = trendData.map(d => {
+    const labels = salesTrend.map(d => {
         let date = new Date(d.date);
         return date.toLocaleDateString('en-US', {day: 'numeric', month: 'short'});
     });
     
-    // Scale existing data for visual density
-    const salesData = trendData.map(d => d.count * 12);
-    const orderData = trendData.map(d => d.count * 8);
-    const reviewData = trendData.map(d => d.count * 6);
+    const revenueData = salesTrend.map(d => d.revenue);
     
     if (trendChartInstance) {
         trendChartInstance.data.labels = labels;
-        trendChartInstance.data.datasets[0].data = salesData;
-        trendChartInstance.data.datasets[1].data = orderData;
-        trendChartInstance.data.datasets[2].data = reviewData;
+        trendChartInstance.data.datasets[0].data = revenueData;
         trendChartInstance.update();
         return;
     }
     
-    // Petpooja Multi-Overlay Style
     trendChartInstance = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
             labels: labels,
-            datasets: [
-                {
-                    label: 'Sale (Revenue)',
-                    data: salesData,
-                    backgroundColor: '#22C55E',
-                    borderRadius: 4,
-                    barThickness: 10,
-                    order: 3
-                },
-                {
-                    label: 'Orders',
-                    type: 'line',
-                    data: orderData,
-                    borderColor: '#3B82F6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    pointRadius: 3,
-                    order: 1
-                },
-                {
-                    label: 'Review (Feedback)',
-                    type: 'line',
-                    data: reviewData,
-                    borderColor: '#F59E0B',
-                    borderDash: [5, 5],
-                    borderWidth: 1.5,
-                    tension: 0.4,
-                    pointRadius: 0,
-                    order: 2
-                }
-            ]
+            datasets: [{
+                label: 'Daily Revenue',
+                data: revenueData,
+                borderColor: '#6366F1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                borderWidth: 4,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 6,
+                pointBackgroundColor: '#fff',
+                pointBorderWidth: 3,
+            }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: { 
-                legend: { 
-                    position: 'bottom',
-                    labels: {
-                        usePointStyle: true,
-                        padding: 20,
-                        font: { size: 12, family: "'Inter', sans-serif" }
+                legend: { display: false },
+                tooltip: { 
+                    backgroundColor: '#1E293B', 
+                    padding: 12,
+                    callbacks: {
+                        label: (c) => '₹' + c.parsed.y.toLocaleString()
                     }
-                },
-                tooltip: { backgroundColor: '#1F2937', padding: 12 }
+                }
             },
             scales: {
-                y: { 
-                    beginAtZero: true,
-                    grid: { color: '#F3F4F6' },
-                    ticks: { font: { size: 11 } }
-                },
-                x: { 
-                    grid: { display: false },
-                    ticks: { font: { size: 11 } }
-                }
+                y: { grid: { color: '#F1F5F9' }, ticks: { font: { size: 11 } } },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } }
             }
         }
     });
 }
 
-// Global scope for mobile card clicks if needed
-window.toggleView = toggleView;
+function renderPersonChart(personData) {
+    const ctx = DOM.personChart;
+    if (!ctx || !personData) return;
+
+    const labels = personData.map(d => d.salesman);
+    const revData = personData.map(d => d.revenue);
+
+    if (personChartInstance) {
+        personChartInstance.data.labels = labels;
+        personChartInstance.data.datasets[0].data = revData;
+        personChartInstance.update();
+        return;
+    }
+
+    personChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: revData,
+                backgroundColor: COLORS,
+                borderWidth: 0,
+                hoverOffset: 15
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: { size: 11, family: "'Inter', sans-serif", weight: '600' }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (c) => ` ${c.label}: ₹${c.parsed.toLocaleString()}`
+                    }
+                }
+            }
+        }
+    });
+}
 
 init();
